@@ -10,7 +10,8 @@ class Menu(Base):
     __tablename__ = 'menu'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String)
     submenu = relationship('Submenu', back_populates='menu', cascade='all, delete-orphan')
 
 
