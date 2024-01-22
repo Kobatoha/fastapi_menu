@@ -20,7 +20,8 @@ class Submenu(Base):
     __tablename__ = 'submenu'
 
     id = Column(String, default=str(uuid.uuid4()), primary_key=True)
-    name = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String)
     menu_id = Column(String, ForeignKey('menu.id'), nullable=False)
     menu = relationship('Menu', back_populates='submenu')
     dishes = relationship('Dish', back_populates='submenu', cascade='all, delete-orphan')
