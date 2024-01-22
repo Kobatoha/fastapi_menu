@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path
 from DataBase.Base import Base
 from DataBase.Menu import Menu, Submenu, Dish
 from sqlalchemy import create_engine
@@ -38,3 +38,37 @@ async def get_menus():
     menus = session.query(Menu).all()
     session.close()
     return menus
+
+
+@app.get('/api/v1/menus/{menu_id}')
+async def get_menu(menu_id: str):
+    with Session() as session:
+        menu = session.query(Menu).filter(Menu.id == menu_id).first()
+        if menu is None:
+            raise HTTPException(status_code=404, detail="menu not found")
+        print(menu.title, menu.description, menu.id)
+        return menu
+
+
+@app.patch('/api/v1/menus/{menu_id}')
+async def update_menu(menu_id: str, menu: MenuCreate):
+    with Session() as session:
+        db_menu = session.query(Menu).filter(Menu.id == menu_id).first()
+        if db_menu is None:
+            raise HTTPException(status_code=404, detail="menu not found")
+        db_menu.title = menu.title
+        db_menu.description = menu.description
+        session.commit()
+        print(db_menu.title, db_menu.description, db_menu.id)
+        return db_menu
+
+
+@app.delete('/api/v1/menus/{menu_id}')
+async def delete_menu(menu_id: str):
+    with Session() as session:
+        db_menu = session.query(Menu).filter(Menu.id == menu_id).first()
+        if db_menu is None:
+            raise HTTPException(status_code=404, detail="menu not found")
+        session.delete(db_menu)
+        session.commit()
+        return {"message": "Menu deleted successfully"}
