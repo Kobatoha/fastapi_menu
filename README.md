@@ -34,7 +34,17 @@
 
 ```pip install -r requirements.txt```
 
-PostgreSQL уже дожна быть установлена. В файле config.py меняем данные на свои для подключения к БД.
+PostgreSQL уже дожна быть установлена. Создаем файл .env в директории с main.py и меняем данные на свои для подключения к БД.
+Содержимое .env должно выглядеть так:
+
+```
+DB_USERNAME='postgres'
+DB_PASSWORD='postgres'
+DB_HOST='localhost'
+DB_NAME='fastapi_menu'
+DB_PORT=5433
+```
+
 Запускаем код командой
 
 ```uvicorn main:app --reload```
