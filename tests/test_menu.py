@@ -117,3 +117,8 @@ def test_read_menus(client, db_session):
     assert response.json() == []
 
 
+def test_clear_db(db_session):
+    db_session.query(Dish).delete()
+    db_session.query(Submenu).delete()
+    db_session.query(Menu).delete()
+    db_session.commit()

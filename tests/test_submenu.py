@@ -130,3 +130,10 @@ def test_read_submenus(client, db_session):
 
     assert response.status_code == 200
     assert len(submenu) == 0
+
+
+def test_clear_db(db_session):
+    db_session.query(Dish).delete()
+    db_session.query(Submenu).delete()
+    db_session.query(Menu).delete()
+    db_session.commit()
