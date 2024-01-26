@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException, Path
+from fastapi import FastAPI, HTTPException
 from DataBase.Base import Base
-from DataBase.Menu import Menu, Submenu, Dish
+from DataBase.models import Menu, Submenu, Dish
+from DataBase.schemas import MenuCreate, SubmenuCreate, DishCreate
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from config import DB_URL
-from pydantic import BaseModel
 import uuid
 
 
@@ -15,22 +15,6 @@ app = FastAPI(
 engine = create_engine(DB_URL)
 
 Session = sessionmaker(bind=engine)
-
-
-class MenuCreate(BaseModel):
-    title: str
-    description: str
-
-
-class SubmenuCreate(BaseModel):
-    title: str
-    description: str
-
-
-class DishCreate(BaseModel):
-    title: str
-    description: str
-    price: str
 
 
 # menus
@@ -248,4 +232,3 @@ async def delete_dish(submenu_id: str, dish_id: str):
         session.delete(db_dish)
         session.commit()
         return {"message": "Dish deleted successfully"}
-
