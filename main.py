@@ -1,26 +1,21 @@
-from fastapi import FastAPI, HTTPException
-from DataBase.Base import Base
+from fastapi import FastAPI, HTTPException, Depends
+from DataBase.Base import Base, engine, get_db
 from DataBase.models import Menu, Submenu, Dish
 from DataBase.schemas import MenuCreate, SubmenuCreate, DishCreate
 from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from config import DB_URL
 import uuid
 
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title='Menu App'
-)
-
-engine = create_engine(DB_URL)
-
-Session = sessionmaker(bind=engine)
+app = FastAPI(title='Menu App')
 
 
 # menus
 @app.post('/api/v1/menus', status_code=201)
-async def create_menu(menu: MenuCreate):
-    with Session() as session:
+async def create_menu(menu: MenuCreate, db: Session = Depends(get_db)):
+    with db as session:
         menu_id = str(uuid.uuid4())
         db_menu = Menu(id=menu_id, title=menu.title, description=menu.description)
         session.add(db_menu)
@@ -30,15 +25,15 @@ async def create_menu(menu: MenuCreate):
 
 
 @app.get('/api/v1/menus')
-async def get_menus():
-    with Session() as session:
+async def get_menus(db: Session = Depends(get_db)):
+    with db as session:
         menus = session.query(Menu).all()
         return menus
 
 
 @app.get('/api/v1/menus/{menu_id}')
-async def get_menu(menu_id: str):
-    with Session() as session:
+async def get_menu(menu_id: str, db: Session = Depends(get_db)):
+    with db as session:
         menu = session.query(Menu).filter(Menu.id == menu_id).first()
         if not menu:
             raise HTTPException(status_code=404, detail="menu not found")
@@ -57,8 +52,8 @@ async def get_menu(menu_id: str):
 
 
 @app.patch('/api/v1/menus/{menu_id}')
-async def update_menu(menu_id: str, menu: MenuCreate):
-    with Session() as session:
+async def update_menu(menu_id: str, menu: MenuCreate, db: Session = Depends(get_db)):
+    with db as session:
         db_menu = session.query(Menu).filter(Menu.id == menu_id).first()
         if not db_menu:
             raise HTTPException(status_code=404, detail="menu not found")
@@ -74,8 +69,8 @@ async def update_menu(menu_id: str, menu: MenuCreate):
 
 
 @app.delete('/api/v1/menus/{menu_id}')
-async def delete_menu(menu_id: str):
-    with Session() as session:
+async def delete_menu(menu_id: str, db: Session = Depends(get_db)):
+    with db as session:
         db_menu = session.query(Menu).filter(Menu.id == menu_id).first()
         if not db_menu:
             raise HTTPException(status_code=404, detail="menu not found")
@@ -86,8 +81,8 @@ async def delete_menu(menu_id: str):
 
 # submenus
 @app.get('/api/v1/menus/{menu_id}/submenus')
-async def get_submenus(menu_id: str):
-    with Session() as session:
+async def get_submenus(menu_id: str, db: Session = Depends(get_db)):
+    with db as session:
         menu = session.query(Menu).filter(Menu.id == menu_id).first()
         if not menu:
             return []
@@ -97,8 +92,8 @@ async def get_submenus(menu_id: str):
 
 
 @app.post('/api/v1/menus/{menu_id}/submenus', status_code=201)
-async def create_submenu(menu_id: str, submenu: SubmenuCreate):
-    with Session() as session:
+async def create_submenu(menu_id: str, submenu: SubmenuCreate, db: Session = Depends(get_db)):
+    with db as session:
         menu = session.query(Menu).filter(Menu.id == menu_id).first()
         if not menu:
             raise HTTPException(status_code=404, detail="menu not found")
@@ -114,8 +109,8 @@ async def create_submenu(menu_id: str, submenu: SubmenuCreate):
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
-async def get_submenu(submenu_id: str):
-    with Session() as session:
+async def get_submenu(submenu_id: str, db: Session = Depends(get_db)):
+    with db as session:
         submenu = session.query(Submenu).filter(Submenu.id == submenu_id).first()
         if submenu is None:
             raise HTTPException(status_code=404, detail="submenu not found")
@@ -131,8 +126,8 @@ async def get_submenu(submenu_id: str):
 
 
 @app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
-async def update_submenu(submenu_id: str, submenu: SubmenuCreate):
-    with Session() as session:
+async def update_submenu(submenu_id: str, submenu: SubmenuCreate, db: Session = Depends(get_db)):
+    with db as session:
         db_submenu = session.query(Submenu).filter(Submenu.id == submenu_id).first()
         if not db_submenu:
             raise HTTPException(status_code=404, detail="submenu not found")
@@ -148,8 +143,8 @@ async def update_submenu(submenu_id: str, submenu: SubmenuCreate):
 
 
 @app.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}')
-async def delete_submenu(submenu_id: str):
-    with Session() as session:
+async def delete_submenu(submenu_id: str, db: Session = Depends(get_db)):
+    with db as session:
         db_submenu = session.query(Submenu).filter(Submenu.id == submenu_id).first()
         if not db_submenu:
             raise HTTPException(status_code=404, detail="submenu not found")
@@ -160,8 +155,8 @@ async def delete_submenu(submenu_id: str):
 
 # dish
 @app.post('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes', status_code=201)
-async def create_dish(submenu_id: str, dish: DishCreate):
-    with Session() as session:
+async def create_dish(submenu_id: str, dish: DishCreate, db: Session = Depends(get_db)):
+    with db as session:
         db_submenu = session.query(Submenu).filter(Submenu.id == submenu_id).first()
         #if not db_submenu:
             #raise HTTPException(status_code=404, detail="submenu not found")
@@ -178,8 +173,8 @@ async def create_dish(submenu_id: str, dish: DishCreate):
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes')
-async def get_dishes(submenu_id: str):
-    with Session() as session:
+async def get_dishes(submenu_id: str, db: Session = Depends(get_db)):
+    with db as session:
         submenu = session.query(Submenu).filter(Submenu.id == submenu_id).first()
         if submenu is None:
             return []
@@ -189,8 +184,8 @@ async def get_dishes(submenu_id: str):
 
 
 @app.get('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
-async def get_dish(submenu_id: str, dish_id: str):
-    with Session() as session:
+async def get_dish(submenu_id: str, dish_id: str, db: Session = Depends(get_db)):
+    with db as session:
         dish = session.query(Dish).filter(Dish.id == dish_id, Dish.submenu_id == submenu_id).first()
         if dish is None:
             raise HTTPException(status_code=404, detail="dish not found")
@@ -205,8 +200,8 @@ async def get_dish(submenu_id: str, dish_id: str):
 
 
 @app.patch('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
-async def update_dish(submenu_id: str, dish_id: str, dish: DishCreate):
-    with Session() as session:
+async def update_dish(submenu_id: str, dish_id: str, dish: DishCreate, db: Session = Depends(get_db)):
+    with db as session:
         db_dish = session.query(Dish).filter(Dish.id == dish_id, Dish.submenu_id == submenu_id).first()
         if db_dish is None:
             raise HTTPException(status_code=404, detail="dish not found")
@@ -224,8 +219,8 @@ async def update_dish(submenu_id: str, dish_id: str, dish: DishCreate):
 
 
 @app.delete('/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/{dish_id}')
-async def delete_dish(submenu_id: str, dish_id: str):
-    with Session() as session:
+async def delete_dish(submenu_id: str, dish_id: str, db: Session = Depends(get_db)):
+    with db as session:
         db_dish = session.query(Dish).filter(Dish.id == dish_id, Dish.submenu_id == submenu_id).first()
         if db_dish is None:
             raise HTTPException(status_code=404, detail="dish not found")
