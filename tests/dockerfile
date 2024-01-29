@@ -1,0 +1,13 @@
+# Dockerfile для тестов
+
+FROM python:3.10-slim
+
+WORKDIR /app/tests
+
+COPY requirements.txt /app/tests/test_requirements.txt
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /fastapi_menu
+
+CMD ["pytest"]

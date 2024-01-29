@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from DataBase.Base import Base, engine, get_db
 from DataBase.models import Menu, Submenu, Dish
 from DataBase.schemas import MenuCreate, SubmenuCreate, DishCreate
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
 from config import DB_URL
 import uuid
@@ -37,10 +37,12 @@ async def get_menu(menu_id: str, db: Session = Depends(get_db)):
         menu = session.query(Menu).filter(Menu.id == menu_id).first()
         if not menu:
             raise HTTPException(status_code=404, detail="menu not found")
+
         submenus = session.query(Submenu).filter(Submenu.menu_id == menu_id).all()
         submenus_count = len(submenus)
         dishes_count = sum(
             session.query(func.count(Dish.id)).filter(Dish.submenu_id == submenu.id).scalar() for submenu in submenus)
+
         menu_dict = {
             "id": menu.id,
             "title": menu.title,
